@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>厨房機器フィット診断AI - デモ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #ffffff;
+  --bg-sub: #f5f7fa;
+  --text: #1a1a2e;
+  --text-sub: #4a5568;
+  --accent: #1e3a5f;
+  --accent-light: #2a5a8f;
+  --accent-bg: #e8eef6;
+  --success: #276749;
+  --success-bg: #e6f4ed;
+  --warning: #975a16;
+  --warning-bg: #fef3cd;
+  --error: #c53030;
+  --error-bg: #fee2e2;
+  --border: #e2e8f0;
+  --shadow: 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .num { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+
+/* ── Hero ── */
+.hero {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f1f35 100%);
+  color: #fff;
+  padding: 80px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.hero-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: 42px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+.hero p {
+  font-size: 17px;
+  opacity: 0.85;
+  max-width: 640px;
+  margin: 0 auto 32px;
+}
+.hero-features {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.hero-features span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+.hero-features .icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+/* ── Layout ── */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+section {
+  padding: 60px 0;
+}
+section:nth-child(even) { background: var(--bg-sub); }
+
+.section-label {
+  display: inline-block;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.section-desc {
+  color: var(--text-sub);
+  font-size: 15px;
+  margin-bottom: 32px;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  border: 1px solid var(--border);
+}
+
+/* ── Store Profile ── */
+.store-profile {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+.store-info { display: flex; flex-direction: column; gap: 16px; }
+.store-info .label { font-size: 12px; color: var(--text-sub); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.store-info .value { font-size: 18px; font-weight: 600; }
+.store-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.tag-blue { background: var(--accent-bg); color: var(--accent); }
+.tag-green { background: var(--success-bg); color: var(--success); }
+.tag-orange { background: var(--warning-bg); color: var(--warning); }
+.tag-red { background: var(--error-bg); color: var(--error); }
+
+/* ── Equipment Grid ── */
+.equip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.equip-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  border: 1px solid var(--border);
+  position: relative;
+  transition: transform 0.2s;
+}
+.equip-card:hover { transform: translateY(-2px); }
+.equip-card .maker {
+  font-size: 11px;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.equip-card .name {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.equip-bar-wrap {
+  background: #e2e8f0;
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.equip-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease;
+}
+.equip-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-sub);
+}
+.equip-status {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.status-high { background: var(--success); }
+.status-mid { background: var(--warning); }
+.status-low { background: var(--error); }
+
+/* ── Bottleneck Timeline ── */
+.timeline-wrap {
+  overflow-x: auto;
+  padding-bottom: 16px;
+}
+.timeline {
+  display: grid;
+  grid-template-columns: 120px repeat(14, 1fr);
+  gap: 2px;
+  min-width: 900px;
+}
+.timeline-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-sub);
+  padding: 8px 4px;
+  text-align: center;
+  background: var(--bg-sub);
+  border-radius: 4px;
+}
+.timeline-label {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 8px;
+  display: flex;
+  align-items: center;
+}
+.timeline-cell {
+  border-radius: 4px;
+  padding: 8px 4px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cell-busy { background: #c53030; color: #fff; }
+.cell-active { background: var(--accent); color: #fff; }
+.cell-idle { background: #e2e8f0; color: var(--text-sub); }
+.cell-conflict { background: #f56565; color: #fff; animation: pulse 1.5s infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.bottleneck-alert {
+  background: var(--error-bg);
+  border: 1px solid #feb2b2;
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.bottleneck-alert .alert-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.bottleneck-alert .alert-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--error);
+  margin-bottom: 4px;
+}
+.bottleneck-alert .alert-desc {
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+/* ── Recipe Proposals ── */
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+.recipe-card {
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.recipe-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.recipe-header {
+  padding: 20px 20px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.recipe-header .recipe-name {
+  font-size: 17px;
+  font-weight: 600;
+}
+.recipe-header .recipe-type {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+.recipe-body { padding: 0 20px 16px; }
+.recipe-equip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.recipe-equip .eq {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-sub);
+}
+.recipe-equip .eq.owned { border-color: var(--success); background: var(--success-bg); color: var(--success); }
+.recipe-equip .eq.missing { border-color: var(--error); background: var(--error-bg); color: var(--error); }
+.recipe-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.recipe-metric {
+  text-align: center;
+  padding: 8px;
+  background: var(--bg-sub);
+  border-radius: 6px;
+}
+.recipe-metric .val { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700; color: var(--accent); }
+.recipe-metric .lbl { font-size: 10px; color: var(--text-sub); }
+.recipe-note {
+  font-size: 13px;
+  color: var(--text-sub);
+  padding: 10px 12px;
+  background: var(--bg-sub);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent);
+}
+.recipe-footer {
+  padding: 12px 20px;
+  background: var(--bg-sub);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+/* ── Cross-sell / Replace ── */
+.proposal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.proposal-card {
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.proposal-card .p-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+.proposal-card .p-header h4 { font-size: 15px; font-weight: 600; }
+.proposal-card .p-body { padding: 20px; }
+.proposal-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.proposal-item:last-child { border-bottom: none; }
+.proposal-item .p-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.proposal-item .p-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.proposal-item .p-desc { font-size: 12px; color: var(--text-sub); margin-bottom: 6px; }
+.proposal-item .p-benefit {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+/* ── Unused Equipment ── */
+.unused-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+.unused-card {
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--warning);
+}
+.unused-card .u-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.unused-card .u-name { font-size: 16px; font-weight: 600; }
+.unused-card .u-rate { font-family: 'Inter'; font-size: 24px; font-weight: 700; color: var(--error); }
+.unused-card .u-suggestions { list-style: none; }
+.unused-card .u-suggestions li {
+  font-size: 13px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.unused-card .u-suggestions li:last-child { border-bottom: none; }
+.unused-card .u-suggestions .bullet {
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Fit Score ── */
+.fit-score-wrap {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.fit-circle {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+.fit-circle svg {
+  transform: rotate(-90deg);
+  width: 180px;
+  height: 180px;
+}
+.fit-circle .bg { fill: none; stroke: #e2e8f0; stroke-width: 12; }
+.fit-circle .fg { fill: none; stroke: var(--accent); stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 1.5s ease; }
+.fit-circle .score-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Inter';
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.fit-circle .score-label {
+  position: absolute;
+  top: 65%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--text-sub);
+}
+.fit-breakdown {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.fit-item {
+  background: var(--bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  text-align: center;
+}
+.fit-item .fi-val { font-family: 'Inter'; font-size: 28px; font-weight: 700; }
+.fit-item .fi-label { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
+
+/* ── Summary Table ── */
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.summary-table th {
+  background: var(--accent);
+  color: #fff;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+}
+.summary-table th:first-child { border-radius: var(--radius) 0 0 0; }
+.summary-table th:last-child { border-radius: 0 var(--radius) 0 0; }
+.summary-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.summary-table tr:hover td { background: var(--bg-sub); }
+
+/* ── AI Chat Demo ── */
+.ai-chat {
+  max-width: 700px;
+  margin: 0 auto;
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.ai-chat-header {
+  background: var(--accent);
+  color: #fff;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ai-chat-header .dot { width: 10px; height: 10px; border-radius: 50%; background: #48bb78; }
+.ai-chat-body {
+  padding: 24px;
+  max-height: 500px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.chat-msg {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.chat-msg.user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.chat-msg.ai {
+  align-self: flex-start;
+  background: var(--bg-sub);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+.chat-msg.ai strong { color: var(--accent); }
+.ai-chat-input {
+  display: flex;
+  border-top: 1px solid var(--border);
+}
+.ai-chat-input input {
+  flex: 1;
+  border: none;
+  padding: 16px 20px;
+  font-size: 14px;
+  font-family: 'Noto Sans JP', sans-serif;
+  outline: none;
+}
+.ai-chat-input button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 16px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: background 0.2s;
+}
+.ai-chat-input button:hover { background: var(--accent-light); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 28px; }
+  .store-profile { grid-template-columns: 1fr; }
+  .proposal-grid { grid-template-columns: 1fr; }
+  .fit-breakdown { grid-template-columns: repeat(2, 1fr); }
+  .recipe-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Tabs ── */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-sub);
+  padding: 4px;
+  border-radius: var(--radius);
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+.tab-btn {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-sub);
+  cursor: pointer;
+  border-radius: 6px;
+  white-space: nowrap;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.2s;
+}
+.tab-btn.active {
+  background: var(--bg);
+  color: var(--accent);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  font-weight: 600;
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── CTA ── */
+.cta-section {
+  background: linear-gradient(135deg, #1e3a5f, #0f1f35);
+  color: #fff;
+  text-align: center;
+  padding: 60px 40px;
+}
+.cta-section h2 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+.cta-section p { opacity: 0.85; margin-bottom: 24px; }
+.cta-btn {
+  display: inline-block;
+  background: #fff;
+  color: var(--accent);
+  padding: 14px 36px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+</style>
+</head>
+<body>
+
+<!-- ════════ HERO ════════ -->
+<div class="hero">
+  <div class="hero-badge">Kitchen Equipment AI</div>
+  <h1>厨房機器フィット診断AI</h1>
+  <p>お店の厨房機器とレシピを分析し、稼働率の最適化・料理提案・機器の追加提案まで、ワンストップで診断します</p>
+  <div class="hero-features">
+    <span><span class="icon">&#x1F50D;</span>機器稼働分析</span>
+    <span><span class="icon">&#x1F372;</span>レシピ最適化</span>
+    <span><span class="icon">&#x26A0;</span>ボトルネック検知</span>
+    <span><span class="icon">&#x1F4C8;</span>クロスセル提案</span>
+  </div>
+</div>
+
+<!-- ════════ STORE PROFILE ════════ -->
+<section>
+  <div class="container">
+    <span class="section-label">Step 1</span>
+    <h2 class="section-title">店舗プロファイル</h2>
+    <p class="section-desc">対象店舗の基本情報と登録されたメニュー構成</p>
+
+    <div class="store-profile">
+      <div class="card">
+        <div class="store-info">
+          <div><span class="label">店舗名</span><div class="value">イタリアンダイニング ROSSO</div></div>
+          <div><span class="label">業態</span><div class="value">イタリアンレストラン（ディナー中心）</div></div>
+          <div><span class="label">席数</span><div class="value">42席（テーブル32 / カウンター10）</div></div>
+          <div><span class="label">ピーク帯</span><div class="value">18:00〜21:00（金・土は22:00まで）</div></div>
+          <div>
+            <span class="label">メニュー構成</span>
+            <div class="store-tags">
+              <span class="tag tag-blue">パスタ 8品</span>
+              <span class="tag tag-blue">ピザ 5品</span>
+              <span class="tag tag-blue">前菜 6品</span>
+              <span class="tag tag-blue">メイン 4品</span>
+              <span class="tag tag-blue">デザート 3品</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="store-info">
+          <div>
+            <span class="label">保有メーカー構成</span>
+            <div class="store-tags" style="margin-top:8px;">
+              <span class="tag tag-green">自社製品 4台</span>
+              <span class="tag tag-orange">A社 2台</span>
+              <span class="tag tag-red">B社 1台</span>
+            </div>
+          </div>
+          <div>
+            <span class="label">導入年数（平均）</span>
+            <div class="value">4.2年</div>
+          </div>
+          <div>
+            <span class="label">直近の修理・メンテナンス</span>
+            <div class="value" style="font-size:14px;">2025年12月 ガスオーブン点検<br>2026年1月 製氷機フィルター交換</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ EQUIPMENT ANALYSIS ════════ -->
+<section>
+  <div class="container">
+    <span class="section-label">Step 2</span>
+    <h2 class="section-title">厨房機器 稼働分析</h2>
+    <p class="section-desc">AIが各機器の稼働率を分析。未活用機器と過負荷機器を特定します</p>
+
+    <div class="equip-grid">
+      <!-- Card 1 -->
+      <div class="equip-card">
+        <div class="equip-status status-high"></div>
+        <div class="maker">自社製品</div>
+        <div class="name">コンベクションオーブン CVO-300</div>
+        <div class="equip-bar-wrap"><div class="equip-bar" style="width:92%;background:var(--error);"></div></div>
+        <div class="equip-meta"><span>稼働率</span><span class="num" style="font-weight:700;color:var(--error);">92%</span></div>
+      </div>
+      <!-- Card 2 -->
+      <div class="equip-card">
+        <div class="equip-status status-high"></div>
+        <div class="maker">自社製品</div>
+        <div class="name">ガスレンジ 6口 GR-600</div>
+        <div class="equip-bar-wrap"><div class="equip-bar" style="width:85%;background:var(--warning);"></div></div>
+        <div class="equip-meta"><span>稼働率</span><span class="num" style="font-weight:700;color:var(--warning);">85%</span></div>
+      </div>
+      <!-- Card 3 -->
+      <div class="equip-card">
+        <div class="equip-status status-mid"></div>
+        <div class="maker">A社</div>
+        <div class="name">業務用冷蔵庫 RF-450</div>
+        <div class="equip-bar-wrap"><div class="equip-bar" style="width:70%;background:var(--accent);"></div></div>
+        <div class="equip-meta"><span>稼働率</span><span class="num" style="font-weight:700;color:var(--accent);">70%</span></div>
+      </div>
+      <!-- Card 4 -->
+      <div class="equip-card">
+        <div class="equip-status status-mid"></div>
+        <div class="maker">自社製品</div>
+        <div class="name">フライヤー DF-220</div>
+        <div class="equip-bar-wrap"><div class="equip-bar" style="width:55%;background:var(--accent);"></div></div>
+        <div class="equip-meta"><span>稼働率</span><span class="num" style="font-weight:700;color:var(--accent);">55%</span></div>
+      </div>
+      <!-- Card 5 -->
+      <div class="equip-card">
+        <div class="equip-status status-low"></div>
+        <div class="maker">B社</div>
+        <div class="name">スチームコンベクション SC-100</div>
+        <div class="equip-bar-wrap"><div class="equip-bar" style="width:18%;background:var(--error);"></div></div>
+        <div class="equip-meta"><span>稼働率</span><span class="num" style="font-weight:700;color:var(--error);">18%</span></div>
+      </div>
+      <!-- Card 6 -->
+      <div class="equip-card">
+        <div class="equip-status status-low"></div>
+        <div class="maker">A社</div>
+        <div class="name">製氷機 IM-250</div>
+        <div class="equip-bar-wrap"><div class="equip-bar" style="width:30%;background:var(--warning);"></div></div>
+        <div class="equip-meta"><span>稼働率</span><span class="num" style="font-weight:700;color:var(--warning);">30%</span></div>
+      </div>
+      <!-- Card 7 -->
+      <div class="equip-card">
+        <div class="equip-status status-mid"></div>
+        <div class="maker">自社製品</div>
+        <div class="name">食器洗浄機 DW-500</div>
+        <div class="equip-bar-wrap"><div class="equip-bar" style="width:65%;background:var(--accent);"></div></div>
+        <div class="equip-meta"><span>稼働率</span><span class="num" style="font-weight:700;color:var(--accent);">65%</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ BOTTLENECK ════════ -->
+<section>
+  <div class="container">
+    <span class="section-label">Step 3</span>
+    <h2 class="section-title">ボトルネック検知 — オーブン稼働タイムライン</h2>
+    <p class="section-desc">ピーク帯のオーブン使用状況をシミュレーション。料理のバッティングによる提供遅延リスクを可視化</p>
+
+    <div class="card">
+      <div class="timeline-wrap">
+        <div class="timeline">
+          <!-- Header -->
+          <div class="timeline-header"></div>
+          <div class="timeline-header">17:30</div>
+          <div class="timeline-header">17:45</div>
+          <div class="timeline-header">18:00</div>
+          <div class="timeline-header">18:15</div>
+          <div class="timeline-header">18:30</div>
+          <div class="timeline-header">18:45</div>
+          <div class="timeline-header">19:00</div>
+          <div class="timeline-header">19:15</div>
+          <div class="timeline-header">19:30</div>
+          <div class="timeline-header">19:45</div>
+          <div class="timeline-header">20:00</div>
+          <div class="timeline-header">20:15</div>
+          <div class="timeline-header">20:30</div>
+
+          <!-- Row: Pizza -->
+          <div class="timeline-label">ピザ（280℃）</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-conflict">競合!</div>
+          <div class="timeline-cell cell-conflict">競合!</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-conflict">競合!</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-idle">-</div>
+
+          <!-- Row: Gratin -->
+          <div class="timeline-label">グラタン（220℃）</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-conflict">競合!</div>
+          <div class="timeline-cell cell-conflict">競合!</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-conflict">競合!</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-idle">-</div>
+
+          <!-- Row: Roast -->
+          <div class="timeline-label">ローストチキン（200℃）</div>
+          <div class="timeline-cell cell-active">仕込</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">休止</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-idle">-</div>
+
+          <!-- Row: Dessert -->
+          <div class="timeline-label">フォンダンショコラ（180℃）</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-idle">-</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-busy">集中</div>
+          <div class="timeline-cell cell-active">焼成</div>
+          <div class="timeline-cell cell-active">焼成</div>
+        </div>
+      </div>
+
+      <div class="bottleneck-alert">
+        <div class="alert-icon">&#x26A0;&#xFE0F;</div>
+        <div>
+          <div class="alert-title">ボトルネック検知: 18:30〜19:00 / 19:15〜19:30</div>
+          <div class="alert-desc">
+            ピザ（280℃）とグラタン（220℃）の同時オーダーが集中し、オーブン1台では温度切替に約8分のロスが発生。
+            <strong>推定提供遅延: 平均+12分</strong>。対策として「スチコン（SC-100）でグラタンを代替調理」または「ピザ窯の追加導入」を推奨します。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ RECIPE PROPOSALS ════════ -->
+<section>
+  <div class="container">
+    <span class="section-label">Step 4</span>
+    <h2 class="section-title">AI料理提案 — 機器の有無に基づく最適化</h2>
+    <p class="section-desc">保有機器で実現可能な新メニューと、追加機器があれば可能になるメニューを提案</p>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('available')">保有機器で可能な提案</button>
+      <button class="tab-btn" onclick="switchTab('additional')">追加機器で可能になる提案</button>
+      <button class="tab-btn" onclick="switchTab('optimize')">既存メニュー最適化</button>
+    </div>
+
+    <!-- Tab: Available -->
+    <div class="tab-content active" id="tab-available">
+      <div class="recipe-grid">
+        <div class="recipe-card">
+          <div class="recipe-header">
+            <div class="recipe-name">低温ローストポーク<br>バルサミコソース</div>
+            <span class="tag tag-green recipe-type">NEW</span>
+          </div>
+          <div class="recipe-body">
+            <div class="recipe-equip">
+              <span class="eq owned">コンベクションオーブン</span>
+              <span class="eq owned">ガスレンジ</span>
+            </div>
+            <div class="recipe-metrics">
+              <div class="recipe-metric"><div class="val">¥380</div><div class="lbl">原価</div></div>
+              <div class="recipe-metric"><div class="val">¥1,680</div><div class="lbl">想定売価</div></div>
+              <div class="recipe-metric"><div class="val">77%</div><div class="lbl">粗利率</div></div>
+            </div>
+            <div class="recipe-note">スチコン（SC-100）の活用で仕込み時間を30%短縮可能。現在稼働率18%のスチコンの有効活用にもなります。</div>
+          </div>
+          <div class="recipe-footer">
+            <span>調理時間: 25分（仕込み除く）</span>
+            <span class="tag tag-green">オーブン負荷: 低</span>
+          </div>
+        </div>
+
+        <div class="recipe-card">
+          <div class="recipe-header">
+            <div class="recipe-name">フリット盛り合わせ<br>3種のディップ</div>
+            <span class="tag tag-green recipe-type">NEW</span>
+          </div>
+          <div class="recipe-body">
+            <div class="recipe-equip">
+              <span class="eq owned">フライヤー</span>
+              <span class="eq owned">冷蔵庫</span>
+            </div>
+            <div class="recipe-metrics">
+              <div class="recipe-metric"><div class="val">¥220</div><div class="lbl">原価</div></div>
+              <div class="recipe-metric"><div class="val">¥1,280</div><div class="lbl">想定売価</div></div>
+              <div class="recipe-metric"><div class="val">83%</div><div class="lbl">粗利率</div></div>
+            </div>
+            <div class="recipe-note">フライヤー稼働率55%→70%へ改善。オーブンを使わずピーク帯のボトルネック回避に貢献します。</div>
+          </div>
+          <div class="recipe-footer">
+            <span>調理時間: 8分</span>
+            <span class="tag tag-green">オーブン負荷: なし</span>
+          </div>
+        </div>
+
+        <div class="recipe-card">
+          <div class="recipe-header">
+            <div class="recipe-name">スチーム野菜の<br>温サラダ仕立て</div>
+            <span class="tag tag-green recipe-type">NEW</span>
+          </div>
+          <div class="recipe-body">
+            <div class="recipe-equip">
+              <span class="eq owned">スチームコンベクション</span>
+              <span class="eq owned">冷蔵庫</span>
+            </div>
+            <div class="recipe-metrics">
+              <div class="recipe-metric"><div class="val">¥180</div><div class="lbl">原価</div></div>
+              <div class="recipe-metric"><div class="val">¥980</div><div class="lbl">想定売価</div></div>
+              <div class="recipe-metric"><div class="val">82%</div><div class="lbl">粗利率</div></div>
+            </div>
+            <div class="recipe-note">稼働率18%のスチコン活用提案。ヘルシーメニューとしてランチ展開も可能。</div>
+          </div>
+          <div class="recipe-footer">
+            <span>調理時間: 12分</span>
+            <span class="tag tag-green">オーブン負荷: なし</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Additional -->
+    <div class="tab-content" id="tab-additional">
+      <div class="recipe-grid">
+        <div class="recipe-card">
+          <div class="recipe-header">
+            <div class="recipe-name">本格ナポリピッツァ<br>マルゲリータ D.O.C.</div>
+            <span class="tag tag-orange recipe-type">要追加機器</span>
+          </div>
+          <div class="recipe-body">
+            <div class="recipe-equip">
+              <span class="eq missing">ピザ窯（未保有）</span>
+              <span class="eq owned">冷蔵庫</span>
+            </div>
+            <div class="recipe-metrics">
+              <div class="recipe-metric"><div class="val">¥250</div><div class="lbl">原価</div></div>
+              <div class="recipe-metric"><div class="val">¥1,480</div><div class="lbl">想定売価</div></div>
+              <div class="recipe-metric"><div class="val">83%</div><div class="lbl">粗利率</div></div>
+            </div>
+            <div class="recipe-note">専用ピザ窯導入でオーブンの温度競合を完全解消。ピザの焼成時間も90秒に短縮し、回転率が大幅向上します。</div>
+          </div>
+          <div class="recipe-footer">
+            <span>調理時間: 90秒（窯入れ後）</span>
+            <span class="tag tag-blue">推奨機器: 自社ピザ窯 PO-500</span>
+          </div>
+        </div>
+
+        <div class="recipe-card">
+          <div class="recipe-header">
+            <div class="recipe-name">真空低温調理<br>和牛ローストビーフ</div>
+            <span class="tag tag-orange recipe-type">要追加機器</span>
+          </div>
+          <div class="recipe-body">
+            <div class="recipe-equip">
+              <span class="eq missing">真空包装機（未保有）</span>
+              <span class="eq owned">スチームコンベクション</span>
+              <span class="eq owned">ガスレンジ</span>
+            </div>
+            <div class="recipe-metrics">
+              <div class="recipe-metric"><div class="val">¥850</div><div class="lbl">原価</div></div>
+              <div class="recipe-metric"><div class="val">¥2,980</div><div class="lbl">想定売価</div></div>
+              <div class="recipe-metric"><div class="val">71%</div><div class="lbl">粗利率</div></div>
+            </div>
+            <div class="recipe-note">真空包装機の追加でスチコンの真価を発揮。スチコン稼働率を18%→50%に改善見込み。客単価UPの目玉メニューに。</div>
+          </div>
+          <div class="recipe-footer">
+            <span>仕込み: 2時間 / 提供: 5分</span>
+            <span class="tag tag-blue">推奨機器: 自社 VP-200</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Optimize -->
+    <div class="tab-content" id="tab-optimize">
+      <div class="recipe-grid">
+        <div class="recipe-card">
+          <div class="recipe-header">
+            <div class="recipe-name">グラタン → スチコン調理に変更</div>
+            <span class="tag tag-blue recipe-type">最適化</span>
+          </div>
+          <div class="recipe-body">
+            <div class="recipe-equip">
+              <span class="eq owned">スチームコンベクション</span>
+            </div>
+            <div class="recipe-metrics">
+              <div class="recipe-metric"><div class="val">-8分</div><div class="lbl">時間短縮</div></div>
+              <div class="recipe-metric"><div class="val">-15%</div><div class="lbl">光熱費削減</div></div>
+              <div class="recipe-metric"><div class="val">解消</div><div class="lbl">オーブン競合</div></div>
+            </div>
+            <div class="recipe-note">グラタンをスチコンのコンビモードで調理することで、コンベクションオーブンをピザ・ローストに専念させ、18:30の競合を解消します。</div>
+          </div>
+          <div class="recipe-footer">
+            <span>品質影響: 同等（表面の焼き色もコンビモードで再現可）</span>
+          </div>
+        </div>
+
+        <div class="recipe-card">
+          <div class="recipe-header">
+            <div class="recipe-name">フォンダンショコラ → 事前仕込み化</div>
+            <span class="tag tag-blue recipe-type">最適化</span>
+          </div>
+          <div class="recipe-body">
+            <div class="recipe-equip">
+              <span class="eq owned">コンベクションオーブン</span>
+              <span class="eq owned">冷蔵庫</span>
+            </div>
+            <div class="recipe-metrics">
+              <div class="recipe-metric"><div class="val">-20分</div><div class="lbl">ピーク帯短縮</div></div>
+              <div class="recipe-metric"><div class="val">+8%</div><div class="lbl">オーダー率UP</div></div>
+              <div class="recipe-metric"><div class="val">解消</div><div class="lbl">20:00帯の集中</div></div>
+            </div>
+            <div class="recipe-note">ランチ帯に仕込み→冷蔵保存→オーダー時に8分焼成に変更。ピーク帯のオーブン占有を大幅に削減。</div>
+          </div>
+          <div class="recipe-footer">
+            <span>品質影響: とろけ具合がむしろ向上（冷蔵による温度差効果）</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ UNUSED / CROSS-SELL ════════ -->
+<section>
+  <div class="container">
+    <span class="section-label">Step 5</span>
+    <h2 class="section-title">未活用機器の活用提案 & クロスセル</h2>
+    <p class="section-desc">使われていない機器の活用方法と、他社製品のリプレイス提案</p>
+
+    <div class="proposal-grid">
+      <!-- Unused Equipment -->
+      <div class="proposal-card">
+        <div class="p-header">
+          <h4>未活用機器の活用提案</h4>
+          <span class="tag tag-orange">2台検出</span>
+        </div>
+        <div class="p-body">
+          <div class="unused-card" style="box-shadow:none;border:1px solid var(--border);margin-bottom:16px;">
+            <div class="u-header">
+              <div>
+                <div class="u-name">スチームコンベクション SC-100</div>
+                <div style="font-size:12px;color:var(--text-sub);">B社 / 稼働率 18%</div>
+              </div>
+              <div class="u-rate">18%</div>
+            </div>
+            <ul class="u-suggestions">
+              <li><span class="bullet">1</span>グラタン調理をオーブンからスチコンに移管（温度競合解消）</li>
+              <li><span class="bullet">2</span>スチーム野菜メニューの新規追加（ヘルシー訴求）</li>
+              <li><span class="bullet">3</span>真空低温調理の導入（真空包装機との組合せ）</li>
+              <li><span class="bullet">4</span>パンの発酵・焼成（ランチタイム自家製パン）</li>
+            </ul>
+          </div>
+          <div class="unused-card" style="box-shadow:none;border:1px solid var(--border);">
+            <div class="u-header">
+              <div>
+                <div class="u-name">製氷機 IM-250</div>
+                <div style="font-size:12px;color:var(--text-sub);">A社 / 稼働率 30%</div>
+              </div>
+              <div class="u-rate">30%</div>
+            </div>
+            <ul class="u-suggestions">
+              <li><span class="bullet">1</span>ドリンクメニュー拡充（クラフトカクテル・モクテル）</li>
+              <li><span class="bullet">2</span>アイスバスでの食材管理活用</li>
+              <li><span class="bullet">3</span>夏季限定かき氷デザートの導入</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cross-sell & Replace -->
+      <div class="proposal-card">
+        <div class="p-header">
+          <h4>クロスセル & リプレイス提案</h4>
+          <span class="tag tag-blue">3件</span>
+        </div>
+        <div class="p-body">
+          <div class="proposal-item">
+            <div class="p-icon" style="background:var(--error-bg);">&#x1F504;</div>
+            <div>
+              <div class="p-name">B社 スチコン SC-100 → 自社 SC-PRO 500</div>
+              <div class="p-desc">B社製は蒸気量調整が2段階のみ。自社SC-PROは5段階+自動湿度制御で調理幅が大幅に拡大。稼働率18%→推定55%に改善見込み。</div>
+              <span class="p-benefit tag tag-green">ROI: 14ヶ月で回収見込み</span>
+            </div>
+          </div>
+          <div class="proposal-item">
+            <div class="p-icon" style="background:var(--warning-bg);">&#x2795;</div>
+            <div>
+              <div class="p-name">【新規】電気式ピザ窯 PO-500</div>
+              <div class="p-desc">オーブンのボトルネック完全解消。ピザ焼成を専用窯に移管することでオーブン稼働率を92%→65%に最適化。ピザ提供時間も8分→90秒に。</div>
+              <span class="p-benefit tag tag-green">売上効果: ピザ売上+35%見込み</span>
+            </div>
+          </div>
+          <div class="proposal-item">
+            <div class="p-icon" style="background:var(--accent-bg);">&#x2795;</div>
+            <div>
+              <div class="p-name">【新規】真空包装機 VP-200</div>
+              <div class="p-desc">スチコンとの組合せで低温調理メニューが実現。仕込みの効率化、食材ロス削減にも貢献。</div>
+              <span class="p-benefit tag tag-green">食材ロス: -20%見込み</span>
+            </div>
+          </div>
+          <div class="proposal-item">
+            <div class="p-icon" style="background:var(--error-bg);">&#x1F504;</div>
+            <div>
+              <div class="p-name">A社 製氷機 IM-250 → 自社 IM-350</div>
+              <div class="p-desc">製氷能力1.4倍、省エネ性能30%向上。ドリンクメニュー拡充に対応し、メンテナンスも自社一括対応で運用コスト削減。</div>
+              <span class="p-benefit tag tag-green">電気代: 年間-¥48,000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ FIT SCORE ════════ -->
+<section>
+  <div class="container">
+    <span class="section-label">Step 6</span>
+    <h2 class="section-title">総合フィットスコア</h2>
+    <p class="section-desc">お店の業態・メニュー・オペレーションに対する厨房機器の最適度を総合評価</p>
+
+    <div class="fit-score-wrap">
+      <div class="fit-circle">
+        <svg viewBox="0 0 180 180">
+          <circle class="bg" cx="90" cy="90" r="78" />
+          <circle class="fg" cx="90" cy="90" r="78" stroke-dasharray="490" stroke-dashoffset="147" />
+        </svg>
+        <div class="score-text">72</div>
+        <div class="score-label">/ 100</div>
+      </div>
+    </div>
+
+    <div class="fit-breakdown">
+      <div class="fit-item">
+        <div class="fi-val" style="color:var(--success);">85</div>
+        <div class="fi-label">メニューカバー率</div>
+      </div>
+      <div class="fit-item">
+        <div class="fi-val" style="color:var(--warning);">58</div>
+        <div class="fi-label">機器稼働バランス</div>
+      </div>
+      <div class="fit-item">
+        <div class="fi-val" style="color:var(--error);">52</div>
+        <div class="fi-label">ボトルネック耐性</div>
+      </div>
+      <div class="fit-item">
+        <div class="fi-val" style="color:var(--success);">92</div>
+        <div class="fi-label">メンテナンス状況</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:32px;">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>改善施策</th>
+            <th>期待効果</th>
+            <th>スコア改善</th>
+            <th>優先度</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>グラタン調理をスチコンに移管</td>
+            <td>オーブン競合解消、提供遅延-12分</td>
+            <td style="font-weight:700;color:var(--success);">+8pt</td>
+            <td><span class="tag tag-red">最優先</span></td>
+          </tr>
+          <tr>
+            <td>ピザ窯 PO-500 導入</td>
+            <td>ピザ売上+35%、オーブン稼働最適化</td>
+            <td style="font-weight:700;color:var(--success);">+12pt</td>
+            <td><span class="tag tag-red">最優先</span></td>
+          </tr>
+          <tr>
+            <td>B社スチコン → 自社SC-PRO 500</td>
+            <td>スチコン稼働率18%→55%、メニュー拡充</td>
+            <td style="font-weight:700;color:var(--success);">+6pt</td>
+            <td><span class="tag tag-orange">高</span></td>
+          </tr>
+          <tr>
+            <td>真空包装機 VP-200 導入</td>
+            <td>低温調理メニュー追加、食材ロス-20%</td>
+            <td style="font-weight:700;color:var(--success);">+5pt</td>
+            <td><span class="tag tag-orange">高</span></td>
+          </tr>
+          <tr>
+            <td>A社製氷機 → 自社IM-350</td>
+            <td>電気代-¥48,000/年、製氷能力1.4倍</td>
+            <td style="font-weight:700;color:var(--success);">+3pt</td>
+            <td><span class="tag tag-blue">中</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ AI CHAT DEMO ════════ -->
+<section>
+  <div class="container">
+    <span class="section-label">AI Chat</span>
+    <h2 class="section-title">AI対話デモ</h2>
+    <p class="section-desc">営業担当が現場でお客様と一緒に使えるAIチャット。質問を入力してお試しください</p>
+
+    <div class="ai-chat">
+      <div class="ai-chat-header">
+        <div class="dot"></div>
+        <span style="font-weight:600;">厨房機器フィット診断AI</span>
+      </div>
+      <div class="ai-chat-body" id="chatBody">
+        <div class="chat-msg ai">
+          こんにちは！「イタリアンダイニング ROSSO」様の厨房機器分析が完了しました。
+          <br><br>
+          <strong>主な発見:</strong><br>
+          ・コンベクションオーブンの稼働率が92%と過負荷です<br>
+          ・スチコンの稼働率が18%と大幅に未活用です<br>
+          ・ピーク帯にオーブン競合が発生しています<br>
+          <br>
+          何について詳しくお聞きになりますか？
+        </div>
+      </div>
+      <div class="ai-chat-input">
+        <input type="text" id="chatInput" placeholder="例: オーブンの負荷を下げるにはどうすれば？" onkeydown="if(event.key==='Enter')sendChat()">
+        <button onclick="sendChat()">送信</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ CTA ════════ -->
+<div class="cta-section">
+  <h2>厨房機器のフィット診断を始めませんか？</h2>
+  <p>AIが店舗ごとの最適な機器構成と料理提案を自動分析。営業提案の質を劇的に向上させます。</p>
+  <a href="#" class="cta-btn">無料診断を申し込む</a>
+</div>
+
+<script>
+// Tab switching
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+// AI Chat demo responses
+const responses = {
+  'オーブン': `<strong>オーブン負荷の改善案をご説明します。</strong><br><br>
+現在、コンベクションオーブン CVO-300 の稼働率は <strong>92%</strong> で、特に18:30〜19:00の時間帯でピザとグラタンの温度競合が発生しています。<br><br>
+<strong>即効性のある対策:</strong><br>
+1. グラタンの調理をスチコン SC-100 に移管（→オーブン稼働率 92%→78%）<br>
+2. フォンダンショコラの事前仕込み化（→ピーク帯のオーブン占有-20分）<br><br>
+<strong>中長期の対策:</strong><br>
+3. 電気式ピザ窯 PO-500 の導入（→ピザ焼成を完全分離）<br><br>
+まずは対策1のスチコン活用から始めることをお勧めします。追加投資なしで効果が出ます。`,
+
+  'スチコン': `<strong>スチコン SC-100（B社）の活用提案です。</strong><br><br>
+現在の稼働率 <strong>18%</strong> は非常にもったいない状態です。<br><br>
+<strong>すぐにできる活用法:</strong><br>
+・グラタンのコンビモード調理（オーブン負荷の分散）<br>
+・蒸し野菜メニューの追加（原価率18%の高収益メニュー）<br>
+・パンの発酵〜焼成（ランチ用自家製フォカッチャ）<br><br>
+<strong>ただし正直に申し上げると…</strong><br>
+B社のSC-100は蒸気量調整が2段階しかなく、本格的な活用には限界があります。自社の <strong>SC-PRO 500</strong> なら5段階調整＋自動湿度制御で、低温調理やコンフィなどプロの技法もカバーできます。<br><br>
+リプレイスをご検討される場合、ROIは約14ヶ月で回収見込みです。`,
+
+  'ピザ': `<strong>ピザ関連の分析結果です。</strong><br><br>
+現在ピザ5品をコンベクションオーブン（280℃）で焼成していますが、いくつかの課題があります：<br><br>
+<strong>課題:</strong><br>
+・焼成時間: 8分/枚（専用窯なら90秒）<br>
+・温度競合: グラタン（220℃）との同時調理が不可<br>
+・ピーク帯の提供遅延: 平均+12分<br><br>
+<strong>電気式ピザ窯 PO-500 導入の効果:</strong><br>
+・ピザ提供時間: 8分 → 90秒（5.3倍高速化）<br>
+・オーブン稼働率: 92% → 65%（最適ゾーン）<br>
+・ピザ売上予測: <strong>+35%</strong>（回転率向上による）<br><br>
+投資額約120万円に対し、売上増と光熱費削減で約8ヶ月での回収を見込んでいます。`,
+
+  'メニュー': `<strong>メニュー構成の最適化提案です。</strong><br><br>
+現在の26品に対し、機器の観点から以下を提案します：<br><br>
+<strong>追加推奨メニュー（保有機器で可能）:</strong><br>
+1. 低温ローストポーク（粗利77%）→ スチコン活用<br>
+2. フリット盛り合わせ（粗利83%）→ フライヤー活用<br>
+3. スチーム野菜サラダ（粗利82%）→ スチコン活用<br><br>
+<strong>調理方法の変更推奨:</strong><br>
+・グラタン → スチコンのコンビモードに変更<br>
+・フォンダンショコラ → 事前仕込み式に変更<br><br>
+これにより、<strong>スチコンの稼働率が18%→45%</strong>に改善し、<strong>オーブンの稼働率が92%→78%</strong>に最適化されます。`,
+
+  'コスト': `<strong>導入コストと回収期間の試算です。</strong><br><br>
+<table style="width:100%;font-size:13px;border-collapse:collapse;">
+<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px;font-weight:600;">施策</td><td style="padding:8px;">投資額</td><td style="padding:8px;">回収期間</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px;">スチコン活用（設定変更のみ）</td><td style="padding:8px;">¥0</td><td style="padding:8px;">即日</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px;">ピザ窯 PO-500</td><td style="padding:8px;">¥1,200,000</td><td style="padding:8px;">8ヶ月</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px;">スチコン SC-PRO 500</td><td style="padding:8px;">¥1,800,000</td><td style="padding:8px;">14ヶ月</td></tr>
+<tr style="border-bottom:1px solid #e2e8f0;"><td style="padding:8px;">真空包装機 VP-200</td><td style="padding:8px;">¥350,000</td><td style="padding:8px;">6ヶ月</td></tr>
+<tr><td style="padding:8px;">製氷機 IM-350</td><td style="padding:8px;">¥450,000</td><td style="padding:8px;">9ヶ月</td></tr>
+</table><br>
+<strong>推奨導入順序:</strong> まずスチコン活用（無料）→ 真空包装機 → ピザ窯 → スチコンリプレイス → 製氷機の順が最もROIが高くなります。`
+};
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const body = document.getElementById('chatBody');
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Add user message
+  const userMsg = document.createElement('div');
+  userMsg.className = 'chat-msg user';
+  userMsg.textContent = text;
+  body.appendChild(userMsg);
+  input.value = '';
+
+  // Find matching response
+  setTimeout(() => {
+    const aiMsg = document.createElement('div');
+    aiMsg.className = 'chat-msg ai';
+
+    let matched = false;
+    for (const [key, val] of Object.entries(responses)) {
+      if (text.includes(key)) {
+        aiMsg.innerHTML = val;
+        matched = true;
+        break;
+      }
+    }
+
+    if (!matched) {
+      aiMsg.innerHTML = `ご質問ありがとうございます。「${text}」についてですね。<br><br>
+この店舗の分析データに基づくと、以下のキーワードで詳しくご案内できます：<br><br>
+・<strong>「オーブン」</strong> — オーブン負荷の改善策<br>
+・<strong>「スチコン」</strong> — 未活用スチコンの活用法<br>
+・<strong>「ピザ」</strong> — ピザ窯導入の効果試算<br>
+・<strong>「メニュー」</strong> — メニュー構成の最適化<br>
+・<strong>「コスト」</strong> — 導入コストと回収期間<br><br>
+お気軽にお聞きください！`;
+    }
+
+    body.appendChild(aiMsg);
+    body.scrollTop = body.scrollHeight;
+  }, 600);
+
+  body.scrollTop = body.scrollHeight;
+}
+</script>
+
+</body>
+</html>
